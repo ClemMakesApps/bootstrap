@@ -24,6 +24,9 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
   // Modes chain
   this.modes = ['day', 'month', 'year'];
 
+  //User date manipulation
+  self.userSelectedDate = false;
+  
   // Configuration attributes
   angular.forEach(['formatDay', 'formatMonth', 'formatYear', 'formatDayHeader', 'formatDayTitle', 'formatMonthTitle',
                    'minMode', 'maxMode', 'showWeeks', 'startingDay', 'yearRange'], function( key, index ) {
@@ -48,8 +51,10 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
 
   if(angular.isDefined($attrs.initDate)) {
     $scope.$parent.$watch($parse($attrs['initDate']), function(newValue) {
-      self.activeDate = newValue;
-      self.refreshView();
+      if(!self.userSelectedDate) {
+        self.activeDate = newValue;
+        self.refreshView();
+      }
     });
   }
 
@@ -123,6 +128,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
       dt.setFullYear( date.getFullYear(), date.getMonth(), date.getDate() );
       ngModelCtrl.$setViewValue( dt );
       ngModelCtrl.$render();
+      self.userSelectedDate = true;
     } else {
       self.activeDate = date;
       $scope.datepickerMode = self.modes[ self.modes.indexOf( $scope.datepickerMode ) - 1 ];
@@ -508,11 +514,6 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         datepickerEl.attr('date-disabled', 'dateDisabled({ date: date, mode: mode })');
       }
       
-      if (attrs.initDate) {
-        scope.initDate = scope.$parent.$eval(attrs.initDate);
-        datepickerEl.attr('init-date', 'initDate');
-      }
-
       function checkInitDate() {
         if (attrs.initDate) {
           scope.initDate = scope.$parent.$eval(attrs.initDate);
