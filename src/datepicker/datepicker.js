@@ -46,6 +46,13 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
   $scope.uniqueId = 'datepicker-' + $scope.$id + '-' + Math.floor(Math.random() * 10000);
   this.activeDate = angular.isDefined($attrs.initDate) ? $scope.$parent.$eval($attrs.initDate) : new Date();
 
+  if(angular.isDefined($attrs.initDate)) {
+    $scope.$parent.$watch($parse($attrs['initDate']), function(newValue) {
+      self.activeDate = newValue;
+      self.refreshView();
+    });
+  }
+
   $scope.isActive = function(dateObject) {
     if (self.compare(dateObject.date, self.activeDate) === 0) {
       $scope.activeDateId = dateObject.uid;
@@ -500,6 +507,23 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       if (attrs.dateDisabled) {
         datepickerEl.attr('date-disabled', 'dateDisabled({ date: date, mode: mode })');
       }
+      
+      if (attrs.initDate) {
+        scope.initDate = scope.$parent.$eval(attrs.initDate);
+        datepickerEl.attr('init-date', 'initDate');
+      }
+
+      function checkInitDate() {
+        if (attrs.initDate) {
+          scope.initDate = scope.$parent.$eval(attrs.initDate);
+          datepickerEl.attr('init-date', 'initDate');
+        }
+      }
+      checkInitDate();
+
+      scope.$parent.$watch($parse(attrs.initDate), function() {
+        checkInitDate();
+      });
 
       function parseDate(viewValue) {
         if (!viewValue) {
